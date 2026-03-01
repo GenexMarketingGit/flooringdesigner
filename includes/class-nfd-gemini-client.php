@@ -24,10 +24,8 @@ class NFD_Gemini_Client
             return ['error' => __('Gemini API key missing. Add it under Settings.', 'nano-floor-designer')];
         }
 
-        $model_id = $this->settings->get('gemini_image_model', 'gemini-2.5-flash-image');
-        if (in_array($model_id, ['gemini-2.0-flash-preview', 'gemini-2.5-flash-image-preview'], true)) {
-            $model_id = 'gemini-2.5-flash-image';
-        }
+        $model_id = $this->settings->get('gemini_image_model', 'gemini-3.1-flash-image-preview');
+        $model_id = $this->normalize_image_model_id($model_id);
         if (!$model_id) {
             return ['error' => __('Gemini Image Model is not configured in settings.', 'nano-floor-designer')];
         }
@@ -150,6 +148,24 @@ class NFD_Gemini_Client
             return 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model_id) . ':generateContent';
         }
         return $this->base . '/models/' . rawurlencode($model_id) . ':generateContent';
+    }
+
+    private function normalize_image_model_id(string $model_id): string
+    {
+        $normalized = strtolower(trim($model_id));
+        $legacy_aliases = [
+            'gemini-2.0-flash-preview',
+            'gemini-2.5-flash-image-preview',
+            'gemini-2.5-flash-image',
+            'nano-banana',
+            'nano-banana-pro',
+        ];
+
+        if (in_array($normalized, $legacy_aliases, true)) {
+            return 'gemini-3.1-flash-image-preview';
+        }
+
+        return trim($model_id);
     }
 
     private function request(string $url, array $body)

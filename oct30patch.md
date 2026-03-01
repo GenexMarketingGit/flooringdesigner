@@ -1,6 +1,6 @@
 # Oct 30 Patch Playbook
 
-This guide documents the precise code updates required to (1) accept portrait and landscape photos that meet the 800x600 minimum resolution and (2) migrate Gemini image generation to the supported `gemini-2.5-flash-image` model. Follow the steps in order for each app that still shows the original validation error.
+This guide documents the precise code updates required to (1) accept portrait and landscape photos that meet the 800x600 minimum resolution and (2) migrate Gemini image generation to the supported `gemini-3.1-flash-image-preview` model. Follow the steps in order for each app that still shows the original validation error.
 
 ## 1. Verify REST upload validation
 - Open the main REST controller (the class that processes `POST /.../process`). Locate the function that validates the uploaded room image. It should call `getimagesize()` to inspect width/height.
@@ -24,20 +24,20 @@ if (!$meets_primary && !$meets_rotated) {
 }
 ```
 
-## 2. Default to Gemini 2.5 Flash Image
-- In the Gemini client class, update the default model ID to `gemini-2.5-flash-image`.
-- Add a safeguard that rewrites deprecated models (`gemini-2.0-flash-preview`, `gemini-2.5-flash-image-preview`, or any legacy alias) to the new ID before making the API call.
+## 2. Default to Gemini 3.1 Flash Image Preview
+- In the Gemini client class, update the default model ID to `gemini-3.1-flash-image-preview`.
+- Add a safeguard that rewrites deprecated models (`gemini-2.0-flash-preview`, `gemini-2.5-flash-image-preview`, `gemini-2.5-flash-image`, or any legacy alias) to the new ID before making the API call.
 - Ensure requests still use the Images API endpoint (`.../models/{model_id}:generateContent`) with inline data.
 
 ```php
-$model_id = $settings->get('gemini_image_model', 'gemini-2.5-flash-image');
-if (in_array($model_id, ['gemini-2.0-flash-preview', 'gemini-2.5-flash-image-preview'], true)) {
-    $model_id = 'gemini-2.5-flash-image';
+$model_id = $settings->get('gemini_image_model', 'gemini-3.1-flash-image-preview');
+if (in_array($model_id, ['gemini-2.0-flash-preview', 'gemini-2.5-flash-image-preview', 'gemini-2.5-flash-image'], true)) {
+    $model_id = 'gemini-3.1-flash-image-preview';
 }
 ```
 
 ## 3. Update Settings Defaults and UI Copy
-- In the plugin/app settings definition, change any placeholder/default for the image model to `gemini-2.5-flash-image`.
+- In the plugin/app settings definition, change any placeholder/default for the image model to `gemini-3.1-flash-image-preview`.
 - Replace references to the old “nano-banana” model in admin copy, README, PRD notes, etc., so non-dev users know which model is current.
 
 ## 4. Regenerate Documentation (optional but recommended)
